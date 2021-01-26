@@ -238,31 +238,20 @@ pwm_status_t pwm_close(pwm_t *pwm)
 	return PWM_E_OK;
 }
 
-pwm_status_t pwm_delay(
+static pwm_status_t pwm_delay_abs_time(
 	pwm_t *pwm,
-	unsigned int duration,
-	unsigned int *remain
+	const struct timespec *ts,
+	struct timespec *remain
 )
 {
 	int ret;
 
-	struct timespec tr;
-	struct timespec ts = {
-		.tv_sec  = (duration / 1000),
-		.tv_nsec = (duration % 1000) * 1000000L,
-	};
-
-	ret = clock_nanosleep(CLOCK_MONOTONIC, 0, &ts, &tr);
+	ret = clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, ts, remain);
 	if (ret == 0)
 		return PWM_E_OK;
 
-	if (ret == EINTR) {
-		if (remain)
-			*remain = (unsigned int)(tr.tv_sec * 1000) +
-			          (unsigned int)(tr.tv_nsec / 1000000L);
-
+	if (ret == EINTR)
 		return PWM_E_INTR;
-	}
 	else
 		return PWM_E_FAILED;
 }
@@ -313,6 +302,10 @@ typedef struct {
 
 	/** Keep enabled after command executed */
 	int keep_enabled;
+
+	/** Timestamp when command must be finished */
+	struct timespec ts_end;
+
 } pwm_cmd_t;
 
 /**
@@ -440,7 +433,7 @@ static int pwm_cmd_execute(pwm_t *pwm, pwm_cmd_t *cmd)
 
 	/* Sleep for specified duration */
 	if (cmd->duration_ms)
-		ret = pwm_delay(pwm, cmd->duration_ms, NULL);
+		ret = pwm_delay_abs_time(pwm, &cmd->ts_end, NULL);
 
 	if (!cmd->keep_enabled && cmd->frequency_hz)
 		ret = pwm_disable(pwm);
@@ -464,6 +457,8 @@ pwm_status_t pwm_execute(
 		config->default_duration_ms
 	);
 
+	clock_gettime(CLOCK_MONOTONIC, &cmd.ts_end);
+
 	while (1) {
 		if (config->stop_flag && *(config->stop_flag))
 			break;
@@ -476,6 +471,14 @@ pwm_status_t pwm_execute(
 		
 		if (!fetched)
 			return PWM_E_OK;
+
+		cmd.ts_end.tv_sec  += cmd.duration_ms / 1000;
+		cmd.ts_end.tv_nsec += (cmd.duration_ms % 1000) * 1000000L;
+
+		if (cmd.ts_end.tv_nsec >= 1000000000L) {
+			cmd.ts_end.tv_nsec -= 1000000000L;
+			cmd.ts_end.tv_sec++;
+		}
 
 		ret = pwm_cmd_execute(pwm, &cmd);
 		if (ret != PWM_E_OK)
