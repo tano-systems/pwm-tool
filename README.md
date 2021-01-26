@@ -41,6 +41,14 @@ This will produce binary `pwm` in the `build` directory. To install this binary 
 # make install
 ```
 
+## Tests
+
+To run unit tests use following command:
+
+```shell
+$ make build_and_test
+```
+
 ## Usage
 
 Usage syntax:

@@ -263,7 +263,7 @@ int main(int argc, char *argv[])
 
 	if (parse_cli_args(argc, argv)) {
 		display_usage();
-		return -EINVAL;
+		return EINVAL;
 	}
 
 	atexit(cleanup);
