@@ -1,4 +1,7 @@
 /*
+ * SPDX-License-Identifier: WTFPL
+ * SPDX-FileCopyrightText: 2021 Anton Kikin <a.kikin@tano-systems.com>
+ *
  * PWM tool
  * Copyright © 2021 Anton Kikin <a.kikin@tano-systems.com>
  *

@@ -1,5 +1,10 @@
 #!/bin/sh
+#
+# SPDX-License-Identifier: WTFPL
+# SPDX-FileCopyrightText: 2021 Anton Kikin <a.kikin@tano-systems.com>
+#
 # Test long durations (exceeding 2^32 in nanoseconds) in script
+#
 
 function do_test {
 	local RET

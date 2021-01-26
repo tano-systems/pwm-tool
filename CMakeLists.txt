@@ -1,3 +1,7 @@
+#
+# SPDX-License-Identifier: WTFPL
+# SPDX-FileCopyrightText: 2021 Anton Kikin <a.kikin@tano-systems.com>
+#
 cmake_minimum_required(VERSION 3.0)
 
 project(pwm-tool C)

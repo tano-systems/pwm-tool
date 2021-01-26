@@ -1,3 +1,7 @@
+#
+# SPDX-License-Identifier: WTFPL
+# SPDX-FileCopyrightText: 2021 Anton Kikin <a.kikin@tano-systems.com>
+#
 file(GLOB_RECURSE TEST_FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.sh)
 
 set(PWM_TEST_ROOT ${CMAKE_CURRENT_SOURCE_DIR})

@@ -1,4 +1,8 @@
 #!/bin/sh
+#
+# SPDX-License-Identifier: WTFPL
+# SPDX-FileCopyrightText: 2021 Anton Kikin <a.kikin@tano-systems.com>
+#
 
 # Must be synced with defines in pwm.c
 SYSFS_PWM_ROOT="./pwmroot"

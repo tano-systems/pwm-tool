@@ -1,4 +1,8 @@
 #!/bin/sh
+#
+# SPDX-License-Identifier: WTFPL
+# SPDX-FileCopyrightText: 2021 Anton Kikin <a.kikin@tano-systems.com>
+#
 
 function freq_test {
 	local ENABLE

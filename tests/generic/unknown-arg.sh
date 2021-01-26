@@ -1,4 +1,8 @@
 #!/bin/sh
+#
+# SPDX-License-Identifier: WTFPL
+# SPDX-FileCopyrightText: 2021 Anton Kikin <a.kikin@tano-systems.com>
+#
 
 function do_test {
 	${PWM_TEST_BIN} -x
