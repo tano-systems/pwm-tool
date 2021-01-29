@@ -6,7 +6,7 @@ cmake_minimum_required(VERSION 3.0)
 
 project(pwm-tool C)
 include(GNUInstallDirs)
-set(PWM_VERSION 1.0.0)
+set(PWM_VERSION 1.0.1)
 
 add_definitions(-Os -Wall -Werror --std=gnu99 -D_GNU_SOURCE)
 add_definitions(-DPWM_VERSION="${PWM_VERSION}")
