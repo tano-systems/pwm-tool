@@ -273,7 +273,7 @@ int main(int argc, char *argv[])
 
 	signal(SIGINT, handle_signal);
 
-	ret = pwm_open(&pwm, config.chip, config.channel);
+	ret = pwm_open(&pwm, config.chip, config.channel, PWM_FLAG_EXPORT);
 	if (ret != PWM_E_OK) {
 		fprintf(stderr,
 			"ERROR: Can't open PWM channel %u of chip %u: %s\n",

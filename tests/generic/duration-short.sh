@@ -9,7 +9,7 @@ function duration_test() {
 	local D1
 	local D2
 	local DURATION=$1
-	local PERCENT=$2
+	local DELTA=$2
 
 	D1=$(date "+%s %N")
 	${PWM_TEST_BIN} -d ${DURATION}
@@ -22,7 +22,7 @@ function duration_test() {
 	test_assert_range \
 		${DMS} \
 		${DURATION} \
-		$((${DURATION} + 100)) \
+		$((${DURATION} + ${DELTA})) \
 		"execution duration"
 }
 
@@ -32,10 +32,10 @@ function do_test {
 	# Create sysfs root + chip folder + channel folder
 	test_sysfs_create ${DEFAULT_PWM_CHIP} ${DEFAULT_PWM_CHANNEL} SYSFS
 
-	duration_test 50   50
-	duration_test 125  50
-	duration_test 333  20
-	duration_test 1253 15
+	duration_test 50   250
+	duration_test 125  250
+	duration_test 333  250
+	duration_test 1253 250
 
 	test_passed
 }

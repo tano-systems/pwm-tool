@@ -32,7 +32,7 @@ function do_test {
 
 	local EXP_ENABLE="10010010"
 	local EXP_PERIOD="100000010000001000000"
-	local EXP_DUTY_CYCLE="050000005000000500000"
+	local EXP_DUTY_CYCLE="50000005000000500000"
 
 	test_assert_eq "${ENABLE}" "${EXP_ENABLE}" "enable data check"
 	test_assert_eq "${PERIOD}" "${EXP_PERIOD}" "period data check"

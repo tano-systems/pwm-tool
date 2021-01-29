@@ -89,11 +89,70 @@
 
 /* ----------------------------------------------------------------------- */
 
-pwm_status_t pwm_open(pwm_t *pwm, unsigned int chip, unsigned int channel)
+static pwm_status_t pwm_export(
+	int chip_fd,
+	unsigned int channel
+)
+{
+	int fd_export = openat(chip_fd, "export", O_WRONLY);
+	if (fd_export < 0)
+		return PWM_E_EXPORT_FAILED;
+
+	char chnum[16];
+	ssize_t size;
+	size = snprintf(chnum, sizeof(chnum), "%u", channel);
+
+	if (write(fd_export, chnum, size) != size) {
+		close(fd_export);
+		return PWM_E_EXPORT_FAILED;
+	}
+
+	close(fd_export);
+	return PWM_E_OK;
+}
+
+static pwm_status_t pwm_state_read(pwm_t *pwm)
+{
+	char buffer[16];
+	ssize_t size;
+
+	size = read(pwm->fd_enable, buffer, sizeof(buffer));
+	if (size <= 0)
+		return PWM_E_IO;
+
+	buffer[size] = '\0';
+	pwm->enabled = !!strtoul(buffer, NULL, 10);
+
+	size = read(pwm->fd_period, buffer, sizeof(buffer));
+	if (size <= 0)
+		return PWM_E_IO;
+
+	buffer[size] = '\0';
+	pwm->period = (unsigned int)strtoul(buffer, NULL, 10);
+
+	size = read(pwm->fd_dutycycle, buffer, sizeof(buffer));
+	if (size <= 0)
+		return PWM_E_IO;
+
+	buffer[size] = '\0';
+	pwm->duty_cycle = (unsigned int)strtoul(buffer, NULL, 10);
+
+	return PWM_E_OK;
+}
+
+/* ----------------------------------------------------------------------- */
+
+pwm_status_t pwm_open(
+	pwm_t *pwm,
+	unsigned int chip,
+	unsigned int channel,
+	unsigned int flags
+)
 {
 	int pwm_root_fd;
 	int pwm_chip_fd;
 	int pwm_channel_fd;
+	pwm_status_t ret;
 
 	char filename[NAME_MAX];
 
@@ -101,6 +160,7 @@ pwm_status_t pwm_open(pwm_t *pwm, unsigned int chip, unsigned int channel)
 
 	pwm->chip = chip;
 	pwm->channel = channel;
+	pwm->flags = flags;
 
 	/* Open sysfs root */
 	pwm_root_fd = open(SYSFS_PWM_ROOT,
@@ -129,8 +189,21 @@ pwm_status_t pwm_open(pwm_t *pwm, unsigned int chip, unsigned int channel)
 		O_PATH | O_DIRECTORY);
 
 	if (pwm_channel_fd < 0) {
-		close(pwm_chip_fd);
-		return PWM_E_NO_CHANNEL;
+		if (pwm->flags & PWM_FLAG_EXPORT) {
+			ret = pwm_export(
+				pwm_chip_fd, pwm->channel);
+
+			if (ret == PWM_E_OK) {
+				/* Try to open channel again after exporting */
+				pwm_channel_fd = openat(pwm_chip_fd, filename,
+					O_PATH | O_DIRECTORY);
+			}
+		}
+
+		if (pwm_channel_fd < 0) {
+			close(pwm_chip_fd);
+			return PWM_E_NO_CHANNEL;
+		}
 	}
 
 	close(pwm_chip_fd);
@@ -154,11 +227,16 @@ pwm_status_t pwm_open(pwm_t *pwm, unsigned int chip, unsigned int channel)
 	if (pwm->fd_period < 0)
 		goto failed;
 
+	ret = pwm_state_read(pwm);
+	if (ret != PWM_E_OK)
+		goto failed;
+
 	close(pwm_channel_fd);
-	return PWM_E_OK;
+	return ret;
 
 failed:
-	close(pwm_channel_fd);
+	if (pwm_channel_fd > 0)
+		close(pwm_channel_fd);
 
 	if (pwm->fd_enable > 0)
 		close(pwm->fd_enable);
@@ -185,20 +263,28 @@ static pwm_status_t pwm_enable_ext(
 	 * to set any period, even one that is larger than
 	 * the current set duty-cycle.
 	 */
-	if (write(pwm->fd_dutycycle, "0", 1) != 1)
-		return PWM_E_IO;
+	if (pwm->period > 0) {
+		if (write(pwm->fd_dutycycle, "0", 1) != 1)
+			return PWM_E_IO;
+	}
 
 	len = snprintf(buf, sizeof(buf), "%u", period);
 	if (write(pwm->fd_period, buf, len) != len)
 		return PWM_E_IO;
+
+	pwm->period = period;
 
 	/* Set specified duty-cycle */
 	len = snprintf(buf, sizeof(buf), "%u", duty);
 	if (write(pwm->fd_dutycycle, buf, len) != len)
 		return PWM_E_IO;
 
+	pwm->period = duty;
+
 	if (write(pwm->fd_enable, "1", 1) != 1)
 		return PWM_E_IO;
+
+	pwm->enabled = 1;
 
 	return PWM_E_OK;
 }
@@ -223,6 +309,8 @@ pwm_status_t pwm_disable(pwm_t *pwm)
 {
 	if (write(pwm->fd_enable, "0", 1) != 1)
 		return PWM_E_IO;
+
+	pwm->enabled = 0;
 
 	return PWM_E_OK;
 }
@@ -285,6 +373,9 @@ const char *pwm_strstatus(const pwm_status_t status)
 
 		case PWM_E_FAILED:
 			return "General failure";
+
+		case PWM_E_EXPORT_FAILED:
+			return "Exporting failure";
 
 		default:
 			return "Unknown";

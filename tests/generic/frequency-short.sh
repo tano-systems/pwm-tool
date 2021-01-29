@@ -14,6 +14,9 @@ function freq_test {
 	local EXP_PERIOD="$2"
 	local EXP_DUTY_CYCLE="$3"
 
+	# Create sysfs root + chip folder + channel folder
+	test_sysfs_create ${DEFAULT_PWM_CHIP} ${DEFAULT_PWM_CHANNEL} SYSFS
+
 	${PWM_TEST_BIN} -f ${FREQ} -d 10
 	RET=$?
 
@@ -31,10 +34,10 @@ function do_test {
 	# Create sysfs root + chip folder + channel folder
 	test_sysfs_create ${DEFAULT_PWM_CHIP} ${DEFAULT_PWM_CHANNEL} SYSFS
 
-	freq_test 440   "2272727" "01136364"
-	freq_test 2213  "4518757" "02259384"
-	freq_test 8192  "1220707" "06103584"
-	freq_test 16000 "6250007" "03125084"
+	freq_test 440   "2272727" "1136364"
+	freq_test 2213  "451875"  "225938"
+	freq_test 8192  "122070"  "61035"
+	freq_test 16000 "62500"   "31250"
 	test_passed
 }
 

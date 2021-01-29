@@ -36,12 +36,16 @@ typedef enum {
 	PWM_E_INVALID_COMMAND,
 	PWM_E_INTR,
 	PWM_E_FAILED,
+	PWM_E_EXPORT_FAILED,
 } pwm_status_t;
 
 /**
  * PWM handle structure
  */
 typedef struct {
+	/** PWM channel flags */
+	unsigned int flags;
+
 	/** File handle to control enabled state */
 	int fd_enable;
 
@@ -50,6 +54,15 @@ typedef struct {
 
 	/** File handle to control period */
 	int fd_period;
+
+	/** Current period value */
+	unsigned int period;
+
+	/** Current duty-cycle value */
+	unsigned int duty_cycle;
+
+	/** Current enabled state */
+	unsigned int enabled;
 
 	/** PWM chip number */
 	unsigned int chip;
@@ -60,11 +73,17 @@ typedef struct {
 } pwm_t;
 
 /**
+ * Export PWM channel if not exported
+ */
+#define PWM_FLAG_EXPORT  0x01
+
+/**
  * Try to open PWM channel.
  *
  * @param[out] pwm     Pointer to the PWM handle structure
  * @param[in]  chip    PWM chip number
  * @param[in]  channel PWM channel number
+ * @param[in]  flags   PWM channel flags
  *
  * @return PWM_E_OK Success
  * @return PWM_E_NO_SYSFS No access to sysfs
@@ -72,7 +91,8 @@ typedef struct {
  * @return PWM_E_NO_CHANNEL Specified channel number is not exits
  * @return PWM_E_IO Can't open channel
  */
-pwm_status_t pwm_open(pwm_t *pwm, unsigned int chip, unsigned int channel);
+pwm_status_t pwm_open(pwm_t *pwm, unsigned int chip,
+	unsigned int channel, unsigned int flags);
 
 /**
  * Enable PWM with specified frequency

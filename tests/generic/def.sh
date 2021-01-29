@@ -35,7 +35,7 @@ function do_test {
 
 	test_assert_eq "${ENABLE}" "10" "enable data check"
 	test_assert_eq "${PERIOD}" "1000000" "period data check"
-	test_assert_eq "${DUTY_CYCLE}" "0500000" "duty_cycle data check"
+	test_assert_eq "${DUTY_CYCLE}" "500000" "duty_cycle data check"
 
 	test_passed
 }

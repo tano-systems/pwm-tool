@@ -62,9 +62,9 @@ function test_sysfs_create() {
 	rm -rf ${_DIR}
 	mkdir -p ${_DIR}
 
-	touch ${_DIR}/${SYSFS_PWM_FILE_ENABLE}
-	touch ${_DIR}/${SYSFS_PWM_FILE_PERIOD}
-	touch ${_DIR}/${SYSFS_PWM_FILE_DUTY_CYCLE}
+	echo -n "0" > ${_DIR}/${SYSFS_PWM_FILE_ENABLE}
+	echo -n "0" > ${_DIR}/${SYSFS_PWM_FILE_PERIOD}
+	echo -n "0" > ${_DIR}/${SYSFS_PWM_FILE_DUTY_CYCLE}
 
 	export -- $3="${_DIR}"
 }
@@ -80,6 +80,14 @@ function test_sysfs_read() {
 	local _ENABLE="$(cat ${_SYSFS}/${SYSFS_PWM_FILE_ENABLE})"
 	local _PERIOD="$(cat ${_SYSFS}/${SYSFS_PWM_FILE_PERIOD})"
 	local _DUTY_CYCLE="$(cat ${_SYSFS}/${SYSFS_PWM_FILE_DUTY_CYCLE})"
+
+	echo "${_ENABLE}"
+	echo "${_PERIOD}"
+	echo "${_DUTY_CYCLE}"
+
+	_ENABLE="${_ENABLE#0}"
+	_PERIOD="${_PERIOD#0}"
+	_DUTY_CYCLE="${_DUTY_CYCLE#0}"
 
 	echo "${_SYSFS}/enable = '${_ENABLE}'"
 	echo "${_SYSFS}/period = '${_PERIOD}'"
