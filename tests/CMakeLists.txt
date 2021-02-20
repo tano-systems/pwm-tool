@@ -11,7 +11,7 @@ list(APPEND CMAKE_CTEST_ARGUMENTS "--output-on-failure")
 
 foreach(FILE ${TEST_FILES})
 	set(NAME ${FILE})
-	set(COMMAND sh ${CMAKE_CURRENT_SOURCE_DIR}/${FILE})
+	set(COMMAND bash ${CMAKE_CURRENT_SOURCE_DIR}/${FILE})
 	string(REPLACE ".sh" "" NAME ${NAME})
 	add_test(NAME ${NAME} COMMAND ${COMMAND})
 	set_property(TEST ${NAME}
