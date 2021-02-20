@@ -1,5 +1,7 @@
 # PWM Tool
 
+![Build Status](https://github.com/tano-systems/pwm-tool/actions/workflows/build.yml/badge.svg?branch=master) ![Tests Status](https://github.com/tano-systems/pwm-tool/actions/workflows/build_and_test.yml/badge.svg?branch=master)
+
 This is a simple Linux command line tool designed to control the available PWM channels via the sysfs interface. The main purpose of this utility is to control a buzzer device connected to the corresponding PWM channel.
 
 ## Build and Install
